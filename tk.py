@@ -1,19 +1,21 @@
 import numpy as np
 import torch
 
-# Dot product
+# Matrix Multiplication
 
 # Numpy
-nv1 = np.array([1, 2, 3, 4])
-nv2 = np.array([0, 1, 0, -1])
+A = np.random.randn(3, 4)
+B = np.random.randn(4, 5)
+C = np.random.randn(3, 7)
 
-print(np.dot(nv1, nv2))
-
-print(np.sum(nv1 * nv2))
+print(np.round(A @ B, 2))
+print(' ')
+print(np.round(C.T @ A, 2))
 
 # PyTorch
-tv1 = torch.tensor([1, 2, 3, 4])
-tv2 = torch.tensor([0, 1, 0, -1])
+A = torch.randn(3, 4)
+B = torch.randn(4, 5)
+C1 = torch.randn(4, 7)
+#C2 = torch.tensor(C1, dtype=torch.float)
 
-print(torch.dot(tv1, tv2))
-print(torch.sum(tv1 * tv2))
+print(np.round(A @ B, 2))
