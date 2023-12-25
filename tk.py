@@ -1,21 +1,41 @@
 import numpy as np
 import torch
+import torch.nn as nn
+import matplotlib.pyplot as plt
 
-# Matrix Multiplication
+# Softmax
 
 # Numpy
-A = np.random.randn(3, 4)
-B = np.random.randn(4, 5)
-C = np.random.randn(3, 7)
+z = [1, 2, 3]
 
-print(np.round(A @ B, 2))
+num = np.exp(z)
+den = np.sum(np.exp(z))
+sigma = num / den
+
+print(sigma)
+print(np.sum(sigma))
 print(' ')
-print(np.round(C.T @ A, 2))
+
+z = np.random.randint(-5, high=15, size=25)
+print(z)
+
+num = np.exp(z)
+den = np.sum(np.exp(z))
+sigma = num / den
+
+plt.plot(z, sigma, 'ko')
+plt.xlabel('Original number (z)')
+plt.ylabel('Softmaxified $\sigma$')
+
+plt.title('$\sum\sigma$ = %g' % np.sum(sigma))
+plt.show()
 
 # PyTorch
-A = torch.randn(3, 4)
-B = torch.randn(4, 5)
-C1 = torch.randn(4, 7)
-#C2 = torch.tensor(C1, dtype=torch.float)
 
-print(np.round(A @ B, 2))
+z = [1, 2, 3]
+
+softfun = nn.Softmax(dim=0)
+
+sigmaT = softfun(torch.Tensor(z))
+
+print(sigmaT)
