@@ -3,39 +3,31 @@ import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 
-# Softmax
+# Logarithms
+x = np.linspace(.0001, 1, 200)
 
-# Numpy
-z = [1, 2, 3]
+logx = np.log(x)
 
-num = np.exp(z)
-den = np.sum(np.exp(z))
-sigma = num / den
+fig = plt.figure(figsize=(10, 4))
 
-print(sigma)
-print(np.sum(sigma))
-print(' ')
+plt.rcParams.update({'font.size': 15})
 
-z = np.random.randint(-5, high=15, size=25)
-print(z)
+plt.plot(x, logx, 'ks-', markerfacecolor='w')
+plt.xlabel('x')
+plt.ylabel('log(x)')
 
-num = np.exp(z)
-den = np.sum(np.exp(z))
-sigma = num / den
-
-plt.plot(z, sigma, 'ko')
-plt.xlabel('Original number (z)')
-plt.ylabel('Softmaxified $\sigma$')
-
-plt.title('$\sum\sigma$ = %g' % np.sum(sigma))
 plt.show()
 
-# PyTorch
+x = np.linspace(.0001, 1, 200)
 
-z = [1, 2, 3]
+logx = np.log(x)
+expx = np.exp(x)
 
-softfun = nn.Softmax(dim=0)
+plt.plot(x, x, color=[.8, .8, .8])
+plt.plot(x, np.exp(logx), 'o', markersize=8)
+plt.plot(x, np.log(expx), 'x', markersize=8)
+plt.xlabel('x')
+plt.ylabel('f(g(x))')
+plt.legend(['unity', 'exp(log(x))', 'log(exp(x))'])
 
-sigmaT = softfun(torch.Tensor(z))
-
-print(sigmaT)
+plt.show()
