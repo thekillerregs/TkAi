@@ -1,33 +1,46 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy.stats as stats
 
-# T-test
-n1 = 30
-n2 = 40
-mu1 = 1
-mu2 = 2
+# sympy = symbolic math in Python
+import sympy as sym
+import sympy.plotting.plot as symplot
 
-data1 = mu1 + np.random.randn(n1)
-data2 = mu2 + np.random.randn(n2)
+# create symbolic variables in sympy
+x = sym.symbols('x')
 
-plt.plot(np.zeros(n1), data1, 'ro', markerfacecolor='w', markersize=14)
-plt.plot(np.ones(n2), data2, 'bs', markerfacecolor='w', markersize=14)
-plt.xlim([-1, 2])
-plt.xticks([0, 1], labels=['Group 1', 'Group 2'])
+# create a function
+fx = 2 * x ** 2
 
+# compute its derivative
+df = sym.diff(fx, x)
+
+# print them
+print(fx)
+print(df)
+
+# plot them
+symplot(fx, (x, -4, 4), title='The function')
 plt.show()
 
-# t-testing
-# p below .05 for significance
-t, p = stats.ttest_ind(data1, data2)
-print('t-value:', t)
-print('p-value:', p)
-
-plt.plot(0 + np.random.randn(n1) / 15, data1, 'ro', markerfacecolor='w', markersize=14)
-plt.plot(1 + np.random.randn(n2) / 15, data2, 'bs', markerfacecolor='w', markersize=14)
-plt.xlim([-1, 2])
-plt.xticks([0, 1], labels=['Group 1', 'Group 2'])
-
-plt.title(f't = {t:.2f}, p ={p:.3f}')
+symplot(df, (x, -4, 4), title='Its derivative')
 plt.show()
+
+# repeat with relu and sigmoid
+
+# create symbolic functions
+relu = sym.Max(0, x)
+sigmoid = 1 / (1 + sym.exp(-x))
+
+# graph the functions
+p = symplot(relu, (x, -4, 4), label='ReLU', show=False, line_color='blue')
+p.extend(symplot(sigmoid, (x, -4, 4), label='Sigmoid', show=False, line_color='red'))
+p.legend = True
+p.title = 'The functions'
+p.show()
+
+# graph their derivatives
+p = symplot(sym.diff(relu), (x, -4, 4), label='df(ReLU)', show=False, line_color='blue')
+p.extend(symplot(sym.diff(sigmoid), (x, -4, 4), label='df(Sigmoid)', show=False, line_color='red'))
+p.legend = True
+p.title = 'The derivatives'
+p.show()
