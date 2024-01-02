@@ -1,34 +1,33 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import torch
-import torch.nn.functional as F
+import scipy.stats as stats
 
-#Seeding
+# T-test
+n1 = 30
+n2 = 40
+mu1 = 1
+mu2 = 2
 
-np.random.randn(5)
+data1 = mu1 + np.random.randn(n1)
+data2 = mu2 + np.random.randn(n2)
 
-#Old method
-np.random.seed(17)
+plt.plot(np.zeros(n1), data1, 'ro', markerfacecolor='w', markersize=14)
+plt.plot(np.ones(n2), data2, 'bs', markerfacecolor='w', markersize=14)
+plt.xlim([-1, 2])
+plt.xticks([0, 1], labels=['Group 1', 'Group 2'])
 
-print(np.random.randn(5))
-print(np.random.randn(5))
+plt.show()
 
-#New method
-randseed1 = np.random.RandomState(17)
-randseed2 = np.random.RandomState(20210530)
+# t-testing
+# p below .05 for significance
+t, p = stats.ttest_ind(data1, data2)
+print('t-value:', t)
+print('p-value:', p)
 
-print(randseed1.randn(5))
-print(randseed2.randn(5))
-print(randseed1.randn(5))
-print(randseed2.randn(5))
-print(np.random.randn(5))
+plt.plot(0 + np.random.randn(n1) / 15, data1, 'ro', markerfacecolor='w', markersize=14)
+plt.plot(1 + np.random.randn(n2) / 15, data2, 'bs', markerfacecolor='w', markersize=14)
+plt.xlim([-1, 2])
+plt.xticks([0, 1], labels=['Group 1', 'Group 2'])
 
-#Pytorch
-torch.randn(5)
-
-torch.manual_seed(17)
-
-print(torch.randn(5))
-
-print(np.random.randn(5))
-
+plt.title(f't = {t:.2f}, p ={p:.3f}')
+plt.show()
