@@ -1,46 +1,59 @@
+# import libraries
 import numpy as np
-import matplotlib.pyplot as plt
-
-# sympy = symbolic math in Python
 import sympy as sym
-import sympy.plotting.plot as symplot
+
+# make the equations look nicer
+from IPython.display import display
 
 # create symbolic variables in sympy
 x = sym.symbols('x')
 
-# create a function
-fx = 2 * x ** 2
+# create two functions
+fx = 2*x**2
+gx = 4*x**3 - 3*x**4
 
-# compute its derivative
-df = sym.diff(fx, x)
+# compute their individual derivatives
+df = sym.diff(fx)
+dg = sym.diff(gx)
 
-# print them
-print(fx)
-print(df)
+# apply the product rule "manually"
+manual = df*gx + fx*dg
+thewrongway = df*dg
 
-# plot them
-symplot(fx, (x, -4, 4), title='The function')
-plt.show()
+# via sympy
+viasympy = sym.diff( fx*gx )
 
-symplot(df, (x, -4, 4), title='Its derivative')
-plt.show()
 
-# repeat with relu and sigmoid
+# print everything
+print('The functions:')
+display(fx)
+display(gx)
+print(' ')
 
-# create symbolic functions
-relu = sym.Max(0, x)
-sigmoid = 1 / (1 + sym.exp(-x))
+print('Their derivatives:')
+display(df)
+display(dg)
+print(' ')
 
-# graph the functions
-p = symplot(relu, (x, -4, 4), label='ReLU', show=False, line_color='blue')
-p.extend(symplot(sigmoid, (x, -4, 4), label='Sigmoid', show=False, line_color='red'))
-p.legend = True
-p.title = 'The functions'
-p.show()
+print('Manual product rule:')
+display(manual)
+print(' ')
 
-# graph their derivatives
-p = symplot(sym.diff(relu), (x, -4, 4), label='df(ReLU)', show=False, line_color='blue')
-p.extend(symplot(sym.diff(sigmoid), (x, -4, 4), label='df(Sigmoid)', show=False, line_color='red'))
-p.legend = True
-p.title = 'The derivatives'
-p.show()
+print('Via sympy:')
+display(viasympy)
+print(' ')
+
+
+print('The wrong way:')
+display(thewrongway)
+
+# repeat with chain rule
+gx = x**2 + 4*x**3
+fx = ( gx )**5
+
+print('The function:')
+display(fx)
+print(' ')
+
+print('Its derivative:')
+display(sym.diff(fx))
