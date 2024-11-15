@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.impute import SimpleImputer
@@ -8,8 +9,15 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+
+def resource_path(filename):
+    """Return the absolute path to a file in the 'resources' folder."""
+    base_dir = os.path.dirname(os.path.dirname(__file__))  # Parent directory of the Python folder
+    return os.path.join(base_dir, 'resources', filename)
+
+
 # Importing data
-dataset = pd.read_csv('Data.csv')
+dataset = pd.read_csv(resource_path('Data.csv'))
 
 # Creating datasets
 x = dataset.iloc[:, :-1].values
@@ -53,4 +61,3 @@ x_test[:, 3:] = sc.transform(x_test[:, 3:])
 
 print(x_train)
 print(x_test)
-
