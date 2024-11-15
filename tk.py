@@ -1,59 +1,56 @@
-# import libraries
 import numpy as np
-import sympy as sym
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
-# make the equations look nicer
-from IPython.display import display
+# Importing data
+dataset = pd.read_csv('Data.csv')
 
-# create symbolic variables in sympy
-x = sym.symbols('x')
+# Creating datasets
+x = dataset.iloc[:, :-1].values
+y = dataset.iloc[:, -1]
 
-# create two functions
-fx = 2*x**2
-gx = 4*x**3 - 3*x**4
+print(x)
+print(y)
 
-# compute their individual derivatives
-df = sym.diff(fx)
-dg = sym.diff(gx)
+# Accounting for missing values
+imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+imputer.fit(x[:, 1:3])
 
-# apply the product rule "manually"
-manual = df*gx + fx*dg
-thewrongway = df*dg
+x[:, 1:3] = imputer.transform(x[:, 1:3])
 
-# via sympy
-viasympy = sym.diff( fx*gx )
+print(x)
 
+# Encoding categories
+ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [0])], remainder='passthrough')
+x = np.array(ct.fit_transform(x))
 
-# print everything
-print('The functions:')
-display(fx)
-display(gx)
-print(' ')
+print(x)
 
-print('Their derivatives:')
-display(df)
-display(dg)
-print(' ')
+# Encoding yes/no labels
+le = LabelEncoder()
+y = le.fit_transform(y)
 
-print('Manual product rule:')
-display(manual)
-print(' ')
+print(y)
 
-print('Via sympy:')
-display(viasympy)
-print(' ')
+# Splitting the datasets into training and test
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1)
 
+print(x_train)
+print(x_test)
+print(y_train)
+print(y_test)
 
-print('The wrong way:')
-display(thewrongway)
+# Feature Scaling - Standardization
+sc = StandardScaler()
+x_train[:, 3:] = sc.fit_transform(x_train[:, 3:])
+x_test[:, 3:] = sc.transform(x_test[:, 3:])
 
-# repeat with chain rule
-gx = x**2 + 4*x**3
-fx = ( gx )**5
+print(x_train)
+print(x_test)
 
-print('The function:')
-display(fx)
-print(' ')
-
-print('Its derivative:')
-display(sym.diff(fx))
