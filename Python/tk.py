@@ -45,3 +45,7 @@ plt.ylabel('Salary')
 plt.title('Truth or Bluff (Linear Regression)')
 plt.legend()
 plt.show()
+
+lin_salary = lin_reg.predict([[6.5]])
+poly_salary = lin_reg_2.predict(poly_reg.fit_transform([[6.5]]))
+print(lin_salary, poly_salary)
