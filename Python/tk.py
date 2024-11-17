@@ -1,11 +1,10 @@
 import os
-
 import numpy as np
+import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
 from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def resource_path(filename: str) -> str:
@@ -15,27 +14,34 @@ def resource_path(filename: str) -> str:
 
 
 # Importing data
-dataset = pd.read_csv(resource_path('50_Startups.csv'))
+dataset = pd.read_csv(resource_path('Position_Salaries.csv'))
 
 # Creating datasets
-x = dataset.iloc[:, :-1].values
+x = dataset.iloc[:, 1:-1].values
 y = dataset.iloc[:, -1]
-
-# Encoding categorical data
-ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [3])], remainder='passthrough')
-x = np.array(ct.fit_transform(x))
 
 # Splitting the datasets into training and test
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
 
-# Multi linear regression
-regressor = LinearRegression()
-regressor.fit(x_train, y_train)
+# Linear regression
+lin_reg = LinearRegression()
+lin_reg.fit(x, y)
 
-# Printing the predictions
-y_pred = regressor.predict(x_test)
-np.set_printoptions(precision=2)
-print(np.concatenate((y_pred.reshape(len(y_pred), 1), y_test.values.reshape(len(y_test), 1)), 1))
+# Polynomial regression
+poly_reg = PolynomialFeatures(degree=4)
+x_poly = poly_reg.fit_transform(x)
+lin_reg_2 = LinearRegression()
+lin_reg_2.fit(x_poly, y)
 
-# Predicting a single value
-print(regressor.predict([[1, 0, 0, 160000, 130000, 300000]]))
+# Visualizing
+x_grid = np.arange(np.min(x), np.max(x), 0.1)
+x_grid = x_grid.reshape((len(x_grid), 1))
+
+plt.scatter(x, y, color='blue')
+plt.plot(x, lin_reg.predict(x), color='red', label='Linear Regression')
+plt.plot(x_grid, lin_reg_2.predict(poly_reg.transform(x_grid)), color='green', label='Polynomial Regression')
+plt.xlabel('Position Level')
+plt.ylabel('Salary')
+plt.title('Truth or Bluff (Linear Regression)')
+plt.legend()
+plt.show()
