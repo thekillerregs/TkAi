@@ -6,39 +6,40 @@ resource_path <- function(filename) {
 
 # Data preprocessing
 # Importing dataset
-dataset = read.csv(resource_path('50_Startups.csv'))
+dataset = read.csv(resource_path('Position_Salaries.csv'))
+dataset = dataset[2:3]
 
-# Encoding categorical data
-dataset$State = factor(
-  dataset$State,
-  levels = c('New York', 'California', 'Florida'),
-  labels = c(1, 2, 3)
-)
+# Linear Regression
+lin_reg = lm(formula = Salary ~ ., data = dataset)
 
+dataset$Level2 = dataset$Level ^ 2
+dataset$Level3 = dataset$Level ^ 3
+dataset$Level4 = dataset$Level ^ 4
 
-#Splitting the dataset into test and training
-set.seed(123)
-split = sample.split(dataset$Profit, SplitRatio = 0.8)
-training_set = subset(dataset, split == TRUE)
-test_set = subset(dataset, split == FALSE)
+# Polynomial Regression
+poly_reg = lm(formula = Salary ~ ., data = dataset)
 
-#Linear Regression
-regressor = lm(formula = Profit ~ ., data = training_set)
+# Visualizing Poly and Linear Regression
+library(ggplot2)
 
-#Summary of statistical significance
-summary(regressor)
+ggplot() +
+  geom_point(aes(x = dataset$Level, y = dataset$Salary), colour = 'red') +
+  geom_line(aes(x = dataset$Level, y = predict(lin_reg, newData = dataset), ), colour = 'blue') +
+  geom_line(aes(x = dataset$Level, y = predict(poly_reg, newdata = dataset), ), colour = 'green') +
+  ggtitle('Truth or Bluff (Linear Regression)') +
+  ylab('Salary') + xlab('Level')
 
-#Predicting a specific value
-newestdata = data.frame(
-  R.D.Spend = 165349.20,
-  Administration = 136897.80,
-  Marketing.Spend = 471784.10,
-  State = factor(1, levels = c(1, 2, 3))
-)
+# Predicting Values
 
-#Predicting the test set results
-y_pred = predict(regressor, newdata = newestdata)
+# Linear
+len_value = predict(lin_reg, newdata = data.frame(Level = 6.5))
 
-
-
+# Poly
+poly_value = predict(poly_reg,
+                     newdata = data.frame(
+                       Level = 6.5,
+                       Level2 = 6.5 ^ 2,
+                       Level3 = 6.5 ^ 3,
+                       Level4 = 6.5 ^ 4
+                     ))
 
