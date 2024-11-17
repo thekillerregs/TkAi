@@ -6,35 +6,41 @@ resource_path <- function(filename) {
 
 # Data preprocessing
 # Importing dataset
-dataset = read.csv(resource_path('Data.csv'))
-
-#Accounting for missing values
-dataset$Age = ifelse(is.na(dataset$Age), 
-                     ave(dataset$Age, FUN = function(x) mean (x, na.rm = TRUE)),
-                     dataset$Age)
-
-dataset$Salary = ifelse(is.na(dataset$Salary), 
-                     ave(dataset$Salary, FUN = function(x) mean (x, na.rm = TRUE)),
-                     dataset$Salary)
-
-#Enconding Countries into numbers
-dataset$Country = factor(dataset$Country, 
-                         levels = c('France', 'Spain', 'Germany'),
-                         labels = c(1,2,3))
-
-#Encoding boolean into 0/1
-dataset$Purchased = factor(dataset$Purchased, 
-                         levels = c('No', 'Yes'),
-                         labels = c(0,1))
+dataset = read.csv(resource_path('Salary_Data.csv'))
 
 #Splitting the dataset into test and training
-library(caTools)
 set.seed(123)
-split = sample.split(dataset$Purchased, SplitRatio = 0.8)
+split = sample.split(dataset$Salary, SplitRatio = 2/3)
 
 training_set = subset(dataset, split == TRUE)
 test_set = subset(dataset, split == FALSE)
 
-#Feature Scaling
-training_set[,2:3] = scale(training_set[,2:3])
-test_set[,2:3] = scale(test_set[,2:3])
+#Linear Regression
+regressor=lm(formula = Salary ~ YearsExperience,
+              data = training_set)
+
+#Summary of statistical significance
+summary(regressor)
+
+#Predicting the test set results
+y_pred = predict(regressor, newdata = test_set)
+library(ggplot2)
+ggplot() +
+  geom_point(aes(x=training_set$YearsExperience, y=training_set$Salary),
+             colour = 'red') +
+  geom_line(aes(x=training_set$YearsExperience, y= predict(regressor, newdata = training_set)),
+            colour = 'blue') +
+  ggtitle('Salary vs Experience (Training Set)') +
+  xlab('Years of Experience') +
+  ylab('Salary')
+
+ggplot() +
+  geom_point(aes(x=test_set$YearsExperience, y=test_set$Salary),
+             colour = 'red') +
+  geom_line(aes(x=training_set$YearsExperience, y = predict(regressor, newdata = training_set)),
+            colour = 'blue') +
+  ggtitle('Salary vs Experience (Test Set)') +
+  xlab('Years of Experience') +
+  ylab('Salary')
+
+             
