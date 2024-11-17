@@ -28,28 +28,17 @@ regressor = lm(formula = Profit ~ ., data = training_set)
 #Summary of statistical significance
 summary(regressor)
 
+#Predicting a specific value
+newestdata = data.frame(
+  R.D.Spend = 165349.20,
+  Administration = 136897.80,
+  Marketing.Spend = 471784.10,
+  State = factor(1, levels = c(1, 2, 3))
+)
+
 #Predicting the test set results
-y_pred = predict(regressor, newdata = test_set)
+y_pred = predict(regressor, newdata = newestdata)
 
-#Building the optimal model using Backward Elimination
-regressor = lm(formula = Profit ~ R.D.Spend + Administration + Marketing.Spend + State, 
-               data = dataset)
 
-summary(regressor)
-
-regressor = lm(formula = Profit ~ R.D.Spend + Administration + Marketing.Spend, 
-               data = dataset)
-
-summary(regressor)
-
-regressor = lm(formula = Profit ~ R.D.Spend + Marketing.Spend, 
-               data = dataset)
-
-summary(regressor)
-
-regressor = lm(formula = Profit ~ R.D.Spend, 
-               data = dataset)
-
-summary(regressor)
 
 
