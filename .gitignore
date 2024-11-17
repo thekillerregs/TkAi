@@ -160,3 +160,5 @@ cython_debug/
 .idea/
 .RData
 .Rhistory
+.Rproj.user
+*.Rproj
