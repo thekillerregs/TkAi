@@ -9,37 +9,23 @@ resource_path <- function(filename) {
 dataset = read.csv(resource_path('Position_Salaries.csv'))
 dataset = dataset[2:3]
 
-# Linear Regression
-lin_reg = lm(formula = Salary ~ ., data = dataset)
-
-dataset$Level2 = dataset$Level ^ 2
-dataset$Level3 = dataset$Level ^ 3
-dataset$Level4 = dataset$Level ^ 4
-
-# Polynomial Regression
-poly_reg = lm(formula = Salary ~ ., data = dataset)
+# SVR Regression
+library(e1071)
+regressor = svm(Salary ~ ., data = dataset, type = 'eps-regression')
 
 # Visualizing Poly and Linear Regression
 library(ggplot2)
 
 ggplot() +
   geom_point(aes(x = dataset$Level, y = dataset$Salary), colour = 'red') +
-  geom_line(aes(x = dataset$Level, y = predict(lin_reg, newData = dataset), ), colour = 'blue') +
-  geom_line(aes(x = dataset$Level, y = predict(poly_reg, newdata = dataset), ), colour = 'green') +
-  ggtitle('Truth or Bluff (Linear Regression)') +
+  geom_line(aes(
+    x = dataset$Level,
+    y = predict(regressor, newdata = dataset),
+    
+  ), colour = 'green') +
+  ggtitle('Truth or Bluff (SVR)') +
   ylab('Salary') + xlab('Level')
 
 # Predicting Values
-
-# Linear
-len_value = predict(lin_reg, newdata = data.frame(Level = 6.5))
-
-# Poly
-poly_value = predict(poly_reg,
-                     newdata = data.frame(
-                       Level = 6.5,
-                       Level2 = 6.5 ^ 2,
-                       Level3 = 6.5 ^ 3,
-                       Level4 = 6.5 ^ 4
-                     ))
-
+# SVR
+value = predict(regressor, newdata = data.frame(Level = 6.5))
