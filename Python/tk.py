@@ -1,8 +1,9 @@
 import os
+
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVR
+from sklearn.tree import DecisionTreeRegressor
 
 
 def resource_path(filename: str) -> str:
@@ -18,28 +19,21 @@ dataset = pd.read_csv(resource_path('Position_Salaries.csv'))
 x = dataset.iloc[:, 1:-1].values
 y = dataset.iloc[:, -1].values
 
-# Reshaping Y
-y = y.reshape(len(y), 1)
-
-# Feature Scaling
-sc_x = StandardScaler()
-sc_y = StandardScaler()
-x = sc_x.fit_transform(x)
-y = sc_y.fit_transform(y)
-
-print(x, y)
-
-# Support Vector Regression (SVR)
-regressor = SVR(kernel='rbf')
+# Decision Tree Regressor
+regressor = DecisionTreeRegressor(random_state=0)
 regressor.fit(x, y)
 
 # Predicting Salary
-pred_y = sc_y.inverse_transform(regressor.predict(sc_x.transform([[6.5]])).reshape(-1, 1))
+pred_y = regressor.predict([[6.5]])
 
-# Visualizing SVR curve
-plt.scatter(sc_x.inverse_transform(x), sc_y.inverse_transform(y), color='red')
-plt.plot(sc_x.inverse_transform(x), sc_y.inverse_transform(regressor.predict(x).reshape(-1, 1)), color='blue')
-plt.title('Truth or Bluff (SVR)')
+print(pred_y)
+
+# Visualizing
+x_grid = np.arange(min(x[:, 0]), max(x[:, 0]), 0.1)
+x_grid = x_grid.reshape(len(x_grid), 1)
+plt.scatter(x, y, color='red')
+plt.plot(x_grid, regressor.predict(x_grid), color='blue')
+plt.title('Truth or Bluff (Decision Tree Regression)')
 plt.xlabel('Position Level')
 plt.ylabel('Salary')
 plt.show()
