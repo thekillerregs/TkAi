@@ -1,10 +1,8 @@
 import os
-import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import PolynomialFeatures
+from matplotlib import pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVR
 
 
 def resource_path(filename: str) -> str:
@@ -18,34 +16,30 @@ dataset = pd.read_csv(resource_path('Position_Salaries.csv'))
 
 # Creating datasets
 x = dataset.iloc[:, 1:-1].values
-y = dataset.iloc[:, -1]
+y = dataset.iloc[:, -1].values
 
-# Splitting the datasets into training and test
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+# Reshaping Y
+y = y.reshape(len(y), 1)
 
-# Linear regression
-lin_reg = LinearRegression()
-lin_reg.fit(x, y)
+# Feature Scaling
+sc_x = StandardScaler()
+sc_y = StandardScaler()
+x = sc_x.fit_transform(x)
+y = sc_y.fit_transform(y)
 
-# Polynomial regression
-poly_reg = PolynomialFeatures(degree=4)
-x_poly = poly_reg.fit_transform(x)
-lin_reg_2 = LinearRegression()
-lin_reg_2.fit(x_poly, y)
+print(x, y)
 
-# Visualizing
-x_grid = np.arange(np.min(x), np.max(x), 0.1)
-x_grid = x_grid.reshape((len(x_grid), 1))
+# Support Vector Regression (SVR)
+regressor = SVR(kernel='rbf')
+regressor.fit(x, y)
 
-plt.scatter(x, y, color='blue')
-plt.plot(x, lin_reg.predict(x), color='red', label='Linear Regression')
-plt.plot(x_grid, lin_reg_2.predict(poly_reg.transform(x_grid)), color='green', label='Polynomial Regression')
+# Predicting Salary
+pred_y = sc_y.inverse_transform(regressor.predict(sc_x.transform([[6.5]])).reshape(-1, 1))
+
+# Visualizing SVR curve
+plt.scatter(sc_x.inverse_transform(x), sc_y.inverse_transform(y), color='red')
+plt.plot(sc_x.inverse_transform(x), sc_y.inverse_transform(regressor.predict(x).reshape(-1, 1)), color='blue')
+plt.title('Truth or Bluff (SVR)')
 plt.xlabel('Position Level')
 plt.ylabel('Salary')
-plt.title('Truth or Bluff (Linear Regression)')
-plt.legend()
 plt.show()
-
-lin_salary = lin_reg.predict([[6.5]])
-poly_salary = lin_reg_2.predict(poly_reg.fit_transform([[6.5]]))
-print(lin_salary, poly_salary)
