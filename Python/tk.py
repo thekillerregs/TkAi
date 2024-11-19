@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 
 
 def resource_path(filename: str) -> str:
@@ -19,8 +19,8 @@ dataset = pd.read_csv(resource_path('Position_Salaries.csv'))
 x = dataset.iloc[:, 1:-1].values
 y = dataset.iloc[:, -1].values
 
-# Decision Tree Regressor
-regressor = DecisionTreeRegressor(random_state=0)
+# Random Forest Regression
+regressor = RandomForestRegressor(n_estimators=10, random_state=0)
 regressor.fit(x, y)
 
 # Predicting Salary
