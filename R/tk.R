@@ -9,23 +9,20 @@ resource_path <- function(filename) {
 dataset = read.csv(resource_path('Position_Salaries.csv'))
 dataset = dataset[2:3]
 
-library(rpart)
-regressor = rpart(formula = Salary ~ .,
-                  data = dataset,
-                  control = rpart.control(minsplit = 1))
+library(randomForest)
+set.seed(1234)
+regressor = randomForest(x = dataset[1],
+                         y = dataset$Salary,
+                         ntree = 100)
 
 # Visualizing
-x_grid = seq(min(dataset$Level), max(dataset$Level), 0.1)
+x_grid = seq(min(dataset$Level), max(dataset$Level), 0.01)
 
 library(ggplot2)
 ggplot() +
   geom_point(aes(x = dataset$Level, y = dataset$Salary), colour = 'red') +
-  geom_line(aes(
-    x = x_grid,
-    y = predict(regressor, newdata = data.frame(Level = x_grid)),
-    
-  ), colour = 'green') +
-  ggtitle('Truth or Bluff (Decision Tree Regression)') +
+  geom_line(aes(x = x_grid, y = predict(regressor, newdata = data.frame(Level = x_grid)), ), colour = 'green') +
+  ggtitle('Truth or Bluff (Random Forest Regression)') +
   ylab('Salary') + xlab('Level')
 
 # Predicting Values
