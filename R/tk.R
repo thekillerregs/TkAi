@@ -9,23 +9,24 @@ resource_path <- function(filename) {
 dataset = read.csv(resource_path('Position_Salaries.csv'))
 dataset = dataset[2:3]
 
-# SVR Regression
-library(e1071)
-regressor = svm(Salary ~ ., data = dataset, type = 'eps-regression')
+library(rpart)
+regressor = rpart(formula = Salary ~ .,
+                  data = dataset,
+                  control = rpart.control(minsplit = 1))
 
-# Visualizing Poly and Linear Regression
+# Visualizing
+x_grid = seq(min(dataset$Level), max(dataset$Level), 0.1)
+
 library(ggplot2)
-
 ggplot() +
   geom_point(aes(x = dataset$Level, y = dataset$Salary), colour = 'red') +
   geom_line(aes(
-    x = dataset$Level,
-    y = predict(regressor, newdata = dataset),
+    x = x_grid,
+    y = predict(regressor, newdata = data.frame(Level = x_grid)),
     
   ), colour = 'green') +
-  ggtitle('Truth or Bluff (SVR)') +
+  ggtitle('Truth or Bluff (Decision Tree Regression)') +
   ylab('Salary') + xlab('Level')
 
 # Predicting Values
-# SVR
 value = predict(regressor, newdata = data.frame(Level = 6.5))
