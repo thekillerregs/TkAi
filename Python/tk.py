@@ -1,13 +1,13 @@
 import os
 
+import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import PolynomialFeatures, StandardScaler
-from sklearn.svm import SVR
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix, accuracy_score
+from matplotlib.colors import ListedColormap
 
 
 def resource_path(filename: str) -> str:
@@ -17,56 +17,83 @@ def resource_path(filename: str) -> str:
 
 
 # Importing data
-dataset = pd.read_csv(resource_path('Model_Selection.csv'))
+dataset = pd.read_csv(resource_path('Social_Network_Ads.csv'))
 
 # Creating datasets
-x = dataset.iloc[:, 1:-1].values
+x = dataset.iloc[:, :-1].values
 y = dataset.iloc[:, -1].values
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
 
-# Multiple Linear Regression
-lin_reg = LinearRegression()
-lin_reg.fit(x_train, y_train)
+# Feature Scaling
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
 
-# Polynomial Regression
-poly_ft = PolynomialFeatures(degree=4)
-x_poly = poly_ft.fit_transform(x_train)
-poly_reg = LinearRegression()
-poly_reg.fit(x_poly, y_train)
-
-# Support Vector Regression
-svr_train_y = y_train.reshape(len(y_train), 1)
-svr_test_y = y_test.reshape(len(y_test), 1)
-
-sc_x = StandardScaler()
-sc_y = StandardScaler()
-svr_x_train = sc_x.fit_transform(x_train)
-svr_x_test = sc_x.transform(x_test)
-svr_y_train = sc_y.fit_transform(svr_train_y)
-
-svr_reg = SVR(kernel='rbf')
-svr_reg.fit(svr_x_train, svr_y_train)
-
-# Decision Tree Regression
-tree_reg = DecisionTreeRegressor(random_state=0)
-tree_reg.fit(x_train, y_train)
-
-# Random Forest Regression
-rf_reg = RandomForestRegressor(n_estimators=10, random_state=0)
-rf_reg.fit(x_train, y_train)
+# Logistic Regression
+classifier = LogisticRegression(random_state=0)
+classifier.fit(x_train, y_train)
 
 # Predictions
-lin_pred = lin_reg.predict(x_test)
-poly_pred = poly_reg.predict(poly_ft.transform(x_test))
-svr_pred = sc_y.inverse_transform(svr_reg.predict(svr_x_test).reshape(-1, 1))
-tree_pred = tree_reg.predict(x_test)
-rf_pred = rf_reg.predict(x_test)
+spec_y_pred = classifier.predict(sc.transform([[30, 87000]]))
 
-lin_score = r2_score(y_test, lin_pred)
-poly_score = r2_score(y_test, poly_pred)
-svr_score = r2_score(y_test, svr_pred)
-tree_score = r2_score(y_test, tree_pred)
-rf_score = r2_score(y_test, rf_pred)
+print(spec_y_pred)
 
-print(lin_score, poly_score, svr_score, tree_score, rf_score)
+y_pred = classifier.predict(x_test)
+
+y_disp = np.concatenate((y_test.reshape(len(y_test), 1), y_pred.reshape(len(y_pred), 1)), 1)
+print(y_disp)
+
+# Confusion Matrix
+cm = confusion_matrix(y_test, y_pred)
+print(cm)
+
+# Accuracy Score
+score = accuracy_score(y_test, y_pred)
+print(score)
+
+
+def logistic_visualization(x, y):
+    """
+    Visualizes the decision boundary for a logistic regression classifier using the global classifier and scaler.
+
+    Parameters:
+        x (ndarray): Feature set (scaled).
+        y (ndarray): Labels.
+    """
+    # Inverse transform the scaled feature set for visualization
+    x_set = sc.inverse_transform(x)
+    y_set = y
+
+    # Create a grid for the decision boundary
+    X1, X2 = np.meshgrid(
+        np.arange(start=x_set[:, 0].min() - 10, stop=x_set[:, 0].max() + 10, step=0.25),
+        np.arange(start=x_set[:, 1].min() - 10000, stop=x_set[:, 1].max() + 10000, step=0.25)
+    )
+
+    # Predict and reshape for contour plotting
+    plt.contourf(
+        X1, X2,
+        classifier.predict(sc.transform(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape),
+        alpha=0.75, cmap=ListedColormap(('red', 'green'))
+    )
+
+    plt.xlim(X1.min(), X1.max())
+    plt.ylim(X2.min(), X2.max())
+
+    # Scatter plot for actual data points
+    for i, j in enumerate(np.unique(y_set)):
+        plt.scatter(
+            x_set[y_set == j, 0], x_set[y_set == j, 1],
+            c=ListedColormap(('red', 'green'))(i), label=j
+        )
+
+    plt.title('Logistic Regression Decision Boundary')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.legend()
+    plt.show()
+
+
+logistic_visualization(x_train, y_train)
+logistic_visualization(x_test, y_test)
