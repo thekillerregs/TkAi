@@ -6,24 +6,25 @@ resource_path <- function(filename) {
 
 # Data preprocessing
 # Importing dataset
-dataset = read.csv(resource_path('Position_Salaries.csv'))
-dataset = dataset[2:3]
+dataset = read.csv(resource_path('Social_Network_Ads.csv'))
 
-library(randomForest)
-set.seed(1234)
-regressor = randomForest(x = dataset[1],
-                         y = dataset$Salary,
-                         ntree = 100)
+# Splititng dataset
+library(caTools)
+set.seed(123)
+split = sample.split(dataset$Purchased, SplitRatio = 0.75)
+training_set = subset(dataset, split == TRUE)
+test_set = subset(dataset, split == FALSE)
 
-# Visualizing
-x_grid = seq(min(dataset$Level), max(dataset$Level), 0.01)
+# Feature Scaling
+training_set[, 1:2] = scale(training_set[, 1:2])
+test_set[, 1:2] = scale(test_set[, 1:2])
 
-library(ggplot2)
-ggplot() +
-  geom_point(aes(x = dataset$Level, y = dataset$Salary), colour = 'red') +
-  geom_line(aes(x = x_grid, y = predict(regressor, newdata = data.frame(Level = x_grid)), ), colour = 'green') +
-  ggtitle('Truth or Bluff (Random Forest Regression)') +
-  ylab('Salary') + xlab('Level')
+# Logistic Regression
+classifier = glm(Purchased ~ ., family = binomial, data = training_set)
 
-# Predicting Values
-value = predict(regressor, newdata = data.frame(Level = 6.5))
+# Predicting the Test set Results
+prob_pred = predict(classifier, type = 'response', newdata = test_set[-3])
+y_pred = ifelse(prob_pred > 0.5, 1, 0)
+
+# Creating Confusion Matrix
+cm = table(test_set[,3], y_pred)
