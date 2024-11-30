@@ -8,6 +8,9 @@ resource_path <- function(filename) {
 # Importing dataset
 dataset = read.csv(resource_path('Social_Network_Ads.csv'))
 
+#Encoding the target feature as factor
+dataset$Purchased = factor(dataset$Purchased, levels = c(0,1))
+
 # Splititng dataset
 library(caTools)
 set.seed(123)
