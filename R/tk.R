@@ -28,7 +28,7 @@ classifier = svm(
   formula = Purchased ~ .,
   data = training_set,
   type = 'C-classification',
-  kernel = 'linear'
+  kernel = 'radial'
 )
 
 y_pred = predict(classifier, newdata = test_set)
