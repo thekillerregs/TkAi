@@ -31,7 +31,7 @@ x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
 # Logistic Regression
-classifier = SVC(kernel='linear', random_state=0)
+classifier = SVC(kernel='rbf', random_state=0)
 classifier.fit(x_train, y_train)
 
 # Predictions
