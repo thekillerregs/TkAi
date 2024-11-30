@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix, accuracy_score
 from matplotlib.colors import ListedColormap
 
@@ -31,7 +31,7 @@ x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
 # Logistic Regression
-classifier = KNeighborsClassifier(n_neighbors=5, metric='minkowski', p=2)
+classifier = SVC(kernel='linear', random_state=0)
 classifier.fit(x_train, y_train)
 
 # Predictions
@@ -96,4 +96,3 @@ def logistic_visualization(x, y):
 
 
 logistic_visualization(x_train, y_train)
-logistic_visualization(x_test, y_test)
