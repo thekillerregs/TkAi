@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score
 from matplotlib.colors import ListedColormap
 
@@ -31,7 +31,7 @@ x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
 # Logistic Regression
-classifier = DecisionTreeClassifier(criterion='entropy', random_state=0)
+classifier = RandomForestClassifier(n_estimators=10, criterion='entropy', random_state=0)
 classifier.fit(x_train, y_train)
 
 # Predictions
@@ -94,5 +94,4 @@ def logistic_visualization(x, y):
     plt.legend()
     plt.show()
 
-
-#logistic_visualization(x_train, y_train)
+# logistic_visualization(x_train, y_train)
