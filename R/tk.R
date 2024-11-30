@@ -23,11 +23,11 @@ training_set[-3] = scale(training_set[-3])
 test_set[-3] = scale(test_set[-3])
 
 # SVM Regression
-library(e1071)
-classifier = naiveBayes(x = training_set[-3], 
-                        y = training_set$Purchased)
+library(rpart)
+classifier = rpart(formula = Purchased ~ .,
+                   data = training_set)
 
-y_pred = predict(classifier, newdata = test_set)
+y_pred = predict(classifier, newdata = test_set[-3], type='class')
 
 # Creating Confusion Matrix
 cm = table(test_set[, 3], y_pred)
@@ -41,7 +41,7 @@ X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
 X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
 grid_set = expand.grid(X1, X2)
 colnames(grid_set) = c('Age', 'EstimatedSalary')
-y_grid = predict(classifier, newdata = grid_set)
+y_grid = predict(classifier, newdata = grid_set, type='class')
 plot(
   set[, -3],
   main = 'Graph',
