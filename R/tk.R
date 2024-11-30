@@ -23,9 +23,10 @@ training_set[-3] = scale(training_set[-3])
 test_set[-3] = scale(test_set[-3])
 
 # SVM Regression
-library(rpart)
-classifier = rpart(formula = Purchased ~ .,
-                   data = training_set)
+library(randomForest)
+classifier = randomForest(x = training_set[-3],
+                          y = training_set$Purchased,
+                          ntree = 10)
 
 y_pred = predict(classifier, newdata = test_set[-3], type='class')
 
