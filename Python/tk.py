@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import confusion_matrix, accuracy_score
 from matplotlib.colors import ListedColormap
 
@@ -31,7 +31,7 @@ x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
 # Logistic Regression
-classifier = SVC(kernel='rbf', random_state=0)
+classifier = GaussianNB()
 classifier.fit(x_train, y_train)
 
 # Predictions
