@@ -17,6 +17,6 @@ summary(dataset)
 
 itemFrequencyPlot(dataset, topN = 10)
 
-# Training Apriori Model
-rules = apriori(dataset, parameter = list(support =0.003, confidence = 0.4))
-inspect(sort(rules, by = 'lift')[1:10])
+# Training Eclat Model
+rules = eclat(dataset, parameter = list(support = 0.004, minlen = 2))
+inspect(sort(rules, by = 'support')[1:10])
