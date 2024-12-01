@@ -5,7 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.cluster import KMeans
 from sklearn.metrics import confusion_matrix, accuracy_score
 from matplotlib.colors import ListedColormap
 
@@ -17,81 +17,36 @@ def resource_path(filename: str) -> str:
 
 
 # Importing data
-dataset = pd.read_csv(resource_path('Social_Network_Ads.csv'))
+dataset = pd.read_csv(resource_path('Mall_Customers.csv'))
 
 # Creating datasets
-x = dataset.iloc[:, :-1].values
-y = dataset.iloc[:, -1].values
+x = dataset.iloc[:, [3, 4]].values
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
+# Evaluating appropriate number of clusters
+wcss = []
+for i in range(1, 11):
+    kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
+    kmeans.fit(x)
+    wcss.append(kmeans.inertia_)
 
-# Feature Scaling
-sc = StandardScaler()
-x_train = sc.fit_transform(x_train)
-x_test = sc.transform(x_test)
+plt.plot(range(1, 11), wcss)
+plt.title('The Elbow Method')
+plt.xlabel('Number of Clusters')
+plt.ylabel('WCSS')
+plt.show()
 
-# Logistic Regression
-classifier = RandomForestClassifier(n_estimators=10, criterion='entropy', random_state=0)
-classifier.fit(x_train, y_train)
+kmeans = KMeans(n_clusters=5, init='k-means++', random_state=42)
+y_kmeans = kmeans.fit_predict(x)
+print(y_kmeans)
 
-# Predictions
-spec_y_pred = classifier.predict(sc.transform([[30, 87000]]))
-
-print(spec_y_pred)
-
-y_pred = classifier.predict(x_test)
-
-y_disp = np.concatenate((y_test.reshape(len(y_test), 1), y_pred.reshape(len(y_pred), 1)), 1)
-print(y_disp)
-
-# Confusion Matrix
-cm = confusion_matrix(y_test, y_pred)
-print(cm)
-
-# Accuracy Score
-score = accuracy_score(y_test, y_pred)
-print(score)
-
-
-def logistic_visualization(x, y):
-    """
-    Visualizes the decision boundary for a logistic regression classifier using the global classifier and scaler.
-
-    Parameters:
-        x (ndarray): Feature set (scaled).
-        y (ndarray): Labels.
-    """
-    # Inverse transform the scaled feature set for visualization
-    x_set = sc.inverse_transform(x)
-    y_set = y
-
-    # Create a grid for the decision boundary
-    X1, X2 = np.meshgrid(
-        np.arange(start=x_set[:, 0].min() - 10, stop=x_set[:, 0].max() + 10, step=0.25),
-        np.arange(start=x_set[:, 1].min() - 10000, stop=x_set[:, 1].max() + 10000, step=0.25)
-    )
-
-    # Predict and reshape for contour plotting
-    plt.contourf(
-        X1, X2,
-        classifier.predict(sc.transform(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape),
-        alpha=0.75, cmap=ListedColormap(('red', 'green'))
-    )
-
-    plt.xlim(X1.min(), X1.max())
-    plt.ylim(X2.min(), X2.max())
-
-    # Scatter plot for actual data points
-    for i, j in enumerate(np.unique(y_set)):
-        plt.scatter(
-            x_set[y_set == j, 0], x_set[y_set == j, 1],
-            c=ListedColormap(('red', 'green'))(i), label=j
-        )
-
-    plt.title('Logistic Regression Decision Boundary')
-    plt.xlabel('Feature 1')
-    plt.ylabel('Feature 2')
-    plt.legend()
-    plt.show()
-
-# logistic_visualization(x_train, y_train)
+plt.scatter(x[y_kmeans == 0, 0], x[y_kmeans == 0, 1], s=100, c='red', label='Cluster 1')
+plt.scatter(x[y_kmeans == 1, 0], x[y_kmeans == 1, 1], s=100, c='blue', label='Cluster 2')
+plt.scatter(x[y_kmeans == 2, 0], x[y_kmeans == 2, 1], s=100, c='green', label='Cluster 3')
+plt.scatter(x[y_kmeans == 3, 0], x[y_kmeans == 3, 1], s=100, c='yellow', label='Cluster 4')
+plt.scatter(x[y_kmeans == 4, 0], x[y_kmeans == 4, 1], s=100, c='pink', label='Cluster 5')
+plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='gray', label='Centroids')
+plt.title('Clusters of Customers')
+plt.xlabel('Annual Income (k$)')
+plt.ylabel('Spending Score (0-100)')
+plt.legend()
+plt.show()
