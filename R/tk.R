@@ -9,30 +9,26 @@ resource_path <- function(filename) {
 dataset = read.csv(resource_path('Mall_Customers.csv'))
 X <- dataset[4:5]
 
-# Elbow Method
-set.seed(6)
-wcss <- vector()
-for (i in 1:10)
-  wcss[i] <- sum(kmeans(X, i)$withinss)
+# Dendrogram
+dendrogram = hclust(dist(X, method = 'euclidean'), method = 'ward.D')
 plot(
-  1:10,
-  wcss,
-  type = 'b',
-  main = paste('Clusters of clients'),
-  xlab = 'Number of clusters',
-  ylab = 'WCSS'
+  dendrogram,
+  main = paste('Dendrogram'),
+  xlab = 'Customers',
+  ylab = 'Euclidean Distances'
 )
 
 
-# Applying K-Means Clustering
-set.seed(29)
-kmeans <- kmeans(X, 5, iter.max = 300, nstart = 10)
+# Applying Hierarchical Clustering
+hc = hclust(dist(X, method = 'euclidean'), method = 'ward.D')
+y_hc = cutree(hc, 5)
+
 
 # Visualizing the clusters
 library(cluster)
 clusplot(
   X,
-  kmeans$cluster,
+  y_hc,
   lines = 0,
   shade = TRUE,
   color = TRUE,
@@ -40,6 +36,6 @@ clusplot(
   plotchar = FALSE,
   span = TRUE,
   main = paste('Clusters of clients'),
-  xlab = 'Number of clusters',
-  ylab = 'WCSS'
+  xlab = 'Annual Income',
+  ylab = 'Spending Score'
 )
