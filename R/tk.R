@@ -6,36 +6,17 @@ resource_path <- function(filename) {
 
 # Data preprocessing
 # Importing dataset
-dataset = read.csv(resource_path('Mall_Customers.csv'))
-X <- dataset[4:5]
-
-# Dendrogram
-dendrogram = hclust(dist(X, method = 'euclidean'), method = 'ward.D')
-plot(
-  dendrogram,
-  main = paste('Dendrogram'),
-  xlab = 'Customers',
-  ylab = 'Euclidean Distances'
+# Creating Matrix
+library(arules)
+dataset = read.transactions(
+  resource_path('Market_Basket_Optimisation.csv'),
+  sep = ',',
+  rm.duplicates = TRUE
 )
+summary(dataset)
 
+itemFrequencyPlot(dataset, topN = 10)
 
-# Applying Hierarchical Clustering
-hc = hclust(dist(X, method = 'euclidean'), method = 'ward.D')
-y_hc = cutree(hc, 5)
-
-
-# Visualizing the clusters
-library(cluster)
-clusplot(
-  X,
-  y_hc,
-  lines = 0,
-  shade = TRUE,
-  color = TRUE,
-  labels = 2,
-  plotchar = FALSE,
-  span = TRUE,
-  main = paste('Clusters of clients'),
-  xlab = 'Annual Income',
-  ylab = 'Spending Score'
-)
+# Training Apriori Model
+rules = apriori(dataset, parameter = list(support =0.003, confidence = 0.4))
+inspect(sort(rules, by = 'lift')[1:10])
