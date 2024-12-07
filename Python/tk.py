@@ -1,15 +1,9 @@
 import os
 
-import pandas as pd
-import numpy as np
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing import image
 import tensorflow as tf
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import confusion_matrix, accuracy_score
-
+import numpy as np
 
 def resource_path(filename: str) -> str:
     """Return the absolute path to a file in the 'resources' folder."""
@@ -17,43 +11,37 @@ def resource_path(filename: str) -> str:
     return os.path.join(base_dir, 'resources', filename)
 
 
-# Importing data
-dataset = pd.read_csv(resource_path('Churn_Modelling.csv'))
+# Importing data, Preprocessing
+train_datagen = ImageDataGenerator(rescale=1. / 255, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
+training_set = train_datagen.flow_from_directory(resource_path('cnn/training_set'), target_size=(64, 64), batch_size=32,
+                                                 class_mode='binary')
 
-x = dataset.iloc[:, 3:-1].values
-y = dataset.iloc[:, -1].values
+test_datagen = ImageDataGenerator(rescale=1. / 255)
+test_set = test_datagen.flow_from_directory(resource_path('cnn/test_set'), target_size=(64, 64), batch_size=32,
+                                            class_mode='binary')
 
-# Encoding Categorical Data
-le = LabelEncoder()
-x[:, 2] = le.fit_transform(x[:, 2])
+cnn = tf.keras.models.Sequential()
+# Convolution
+cnn.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, activation='relu', input_shape=[64, 64, 3]))
+# Pooling
+cnn.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2))
 
-ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [1])], remainder='passthrough')
-x = np.array(ct.fit_transform(x))
+# Second layer
+cnn.add(tf.keras.layers.Conv2D(filters=32, kernel_size=3, activation='relu'))
+cnn.add(tf.keras.layers.MaxPool2D(pool_size=2, strides=2))
 
-# Splitting dataset
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+# Flattening
+cnn.add(tf.keras.layers.Flatten())
 
-# Feature Scaling
-sc = StandardScaler()
-x_train = sc.fit_transform(x_train)
-x_test = sc.transform(x_test)
+# Full Connection
+cnn.add(tf.keras.layers.Dense(units=128, activation='relu'))
 
-# Initializing ANN
-ann = tf.keras.models.Sequential()
-# Input
-ann.add(tf.keras.layers.Dense(units=6, activation='relu'))
-# Hidden
-ann.add(tf.keras.layers.Dense(units=6, activation='relu'))
 # Output
-ann.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
+cnn.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
 
-# Training
-ann.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-ann.fit(x_train, y_train, batch_size=32, epochs=100)
+# Compiling
+cnn.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-# Predicting!
-print(ann.predict(sc.transform([[1, 0, 0, 600, 1, 40, 3, 60000, 2, 1, 1, 50000]])))
-y_pred = (ann.predict(x_test) > 0.5)
-cm = confusion_matrix(y_test, y_pred)
-print(cm)
-print(accuracy_score(y_test, y_pred))
+cnn.fit(x=training_set, validation_data=test_set, epochs=25)
+
+# Single prediction
