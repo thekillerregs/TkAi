@@ -1,15 +1,14 @@
 import os
-import re
 
-import nltk
-import numpy as np
 import pandas as pd
-from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics import confusion_matrix, accuracy_score
+import numpy as np
+import tensorflow as tf
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import confusion_matrix, accuracy_score
 
 
 def resource_path(filename: str) -> str:
@@ -19,32 +18,42 @@ def resource_path(filename: str) -> str:
 
 
 # Importing data
-dataset = pd.read_csv(resource_path('Restaurant_Reviews.tsv'), delimiter='\t', quoting=3)
+dataset = pd.read_csv(resource_path('Churn_Modelling.csv'))
 
-# Cleaning texts
-nltk.download('stopwords')
-corpus = []
-for i in range(0, 1000):
-    review = re.sub('[^a-zA-Z]', ' ', dataset['Review'][i]).lower().split()
-    ps = PorterStemmer()
-    all_stopwords = stopwords.words('english')
-    all_stopwords.remove('not')
-    review = [ps.stem(word) for word in review if word not in set(all_stopwords)]
-    review = ' '.join(review)
-    corpus.append(review)
+x = dataset.iloc[:, 3:-1].values
+y = dataset.iloc[:, -1].values
 
-cv = CountVectorizer(max_features=1500)
-X = cv.fit_transform(corpus).toarray()
-y = dataset.iloc[:, 1].values
+# Encoding Categorical Data
+le = LabelEncoder()
+x[:, 2] = le.fit_transform(x[:, 2])
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [1])], remainder='passthrough')
+x = np.array(ct.fit_transform(x))
 
-classifier = GaussianNB()
-classifier.fit(X_train, y_train)
+# Splitting dataset
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
 
-y_pred = classifier.predict(X_test)
-print(np.concatenate((y_pred.reshape(len(y_pred), 1), y_test.reshape(len(y_test), 1)), 1))
+# Feature Scaling
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
 
+# Initializing ANN
+ann = tf.keras.models.Sequential()
+# Input
+ann.add(tf.keras.layers.Dense(units=6, activation='relu'))
+# Hidden
+ann.add(tf.keras.layers.Dense(units=6, activation='relu'))
+# Output
+ann.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
+
+# Training
+ann.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+ann.fit(x_train, y_train, batch_size=32, epochs=100)
+
+# Predicting!
+print(ann.predict(sc.transform([[1, 0, 0, 600, 1, 40, 3, 60000, 2, 1, 1, 50000]])))
+y_pred = (ann.predict(x_test) > 0.5)
 cm = confusion_matrix(y_test, y_pred)
 print(cm)
 print(accuracy_score(y_test, y_pred))
