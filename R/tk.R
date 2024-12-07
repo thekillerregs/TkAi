@@ -5,47 +5,56 @@ resource_path <- function(filename) {
 }
 
 # Importing the dataset
-dataset_original = read.delim(resource_path('Restaurant_Reviews.tsv'), quote = '', stringsAsFactors = FALSE)
+dataset = read.csv(resource_path('Churn_Modelling.csv'))
+dataset = dataset[4:14]
 
-# Cleaning the texts
-# install.packages('tm')
-# install.packages('SnowballC')
-library(tm)
-library(SnowballC)
-corpus = VCorpus(VectorSource(dataset_original$Review))
-corpus = tm_map(corpus, content_transformer(tolower))
-corpus = tm_map(corpus, removeNumbers)
-corpus = tm_map(corpus, removePunctuation)
-corpus = tm_map(corpus, removeWords, stopwords())
-corpus = tm_map(corpus, stemDocument)
-corpus = tm_map(corpus, stripWhitespace)
+# Encoding categorical variable as factors
+dataset$Geography = as.numeric(factor(
+  dataset$Geography,
+  levels = c('France', 'Spain', 'Germany'),
+  labels = c(1, 2, 3)
+))
 
-# Creating the Bag of Words model
-dtm = DocumentTermMatrix(corpus)
-dtm = removeSparseTerms(dtm, 0.999)
-dataset = as.data.frame(as.matrix(dtm))
-dataset$Liked = dataset_original$Liked
+dataset$Gender = as.numeric(factor(
+  dataset$Gender,
+  levels = c('Female', 'Male'),
+  labels = c(1, 2)
+))
 
-# Encoding the target feature as factor
-dataset$Liked = factor(dataset$Liked, levels = c(0, 1))
-
-# Splitting the dataset into the Training set and Test set
-# install.packages('caTools')
 library(caTools)
 set.seed(123)
-split = sample.split(dataset$Liked, SplitRatio = 0.8)
+
+# Split
+
+split = sample.split(dataset$Exited, SplitRatio = 0.8)
 training_set = subset(dataset, split == TRUE)
 test_set = subset(dataset, split == FALSE)
 
-# Fitting Random Forest Classification to the Training set
-# install.packages('randomForest')
-library(randomForest)
-classifier = randomForest(x = training_set[-692],
-                          y = training_set$Liked,
-                          ntree = 10)
+# Feature Scaling
+training_set[-11] = scale(training_set[-11])
+test_set[-11] = scale(test_set[-11])
 
-# Predicting the Test set results
-y_pred = predict(classifier, newdata = test_set[-692])
+# Fitting ANN to Training set
+library(h2o)
+h2o.init(nthreads = -1)
 
-# Making the Confusion Matrix
-cm = table(test_set[, 692], y_pred)
+
+classifier = h2o.deeplearning(
+  y = 'Exited',
+  training_frame = as.h2o(training_set),
+  activation = 'Rectifier',
+  hidden = c(6, 6),
+  epochs = 100,
+  train_samples_per_iteration = -2
+)
+
+# Predicting
+prob_pred = h2o.predict(classifier, type = 'response', newdata = as.h2o(test_set[-11]))
+y_pred = ifelse(prob_pred > 0.5, 1, 0)
+y_pred = as.vector(y_pred)
+
+# Confusion Matrix
+cm = table(test_set[, 11], y_pred)
+
+# Disconnecting
+h2o.shutdown()
