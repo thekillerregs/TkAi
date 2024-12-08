@@ -1,15 +1,13 @@
 import os
 
-import pandas as pd
 import numpy as np
-from matplotlib.colors import ListedColormap
-from sklearn.decomposition import KernelPCA
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix, accuracy_score
-from sklearn.model_selection import train_test_split
+import pandas as pd
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix, accuracy_score
+from matplotlib.colors import ListedColormap
 
 
 def resource_path(filename: str) -> str:
@@ -19,43 +17,87 @@ def resource_path(filename: str) -> str:
 
 
 # Importing data
-dataset = pd.read_csv(resource_path('Wine.csv'))
+dataset = pd.read_csv(resource_path('Social_Network_Ads.csv'))
+
+# Creating datasets
 x = dataset.iloc[:, :-1].values
 y = dataset.iloc[:, -1].values
 
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.25, random_state=0)
 
+# Feature Scaling
 sc = StandardScaler()
 x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
-# Applying Kernel PCA
-kpca = KernelPCA(n_components=2, kernel='rbf')
-x_train = kpca.fit_transform(x_train)
-x_test = kpca.transform(x_test)
-
 # Logistic Regression
-classifier = LogisticRegression(random_state=0)
+classifier = SVC(kernel='rbf', random_state=0)
 classifier.fit(x_train, y_train)
 
-# Displaying
+# Predictions
+spec_y_pred = classifier.predict(sc.transform([[30, 87000]]))
+
+print(spec_y_pred)
+
 y_pred = classifier.predict(x_test)
+
+y_disp = np.concatenate((y_test.reshape(len(y_test), 1), y_pred.reshape(len(y_pred), 1)), 1)
+print(y_disp)
+
+# Confusion Matrix
 cm = confusion_matrix(y_test, y_pred)
 print(cm)
-print(accuracy_score(y_test, y_pred))
 
-x_set, y_set = x_train, y_train
-X1, X2 = np.meshgrid(np.arange(start=x_set[:, 0].min() - 1, stop=x_set[:, 0].max() + 1, step=0.01),
-                     np.arange(start=x_set[:, 1].min() - 1, stop=x_set[:, 1].max() + 1, step=0.01))
-plt.contourf(X1, X2, classifier.predict(np.array([X1.ravel(), X2.ravel()]).T).reshape(X1.shape),
-             alpha=0.75, cmap=ListedColormap(('red', 'green', 'blue')))
-plt.xlim(X1.min(), X1.max())
-plt.ylim(X2.min(), X2.max())
-for i, j in enumerate(np.unique(y_set)):
-    plt.scatter(x_set[y_set == j, 0], x_set[y_set == j, 1],
-                c=ListedColormap(('red', 'green', 'blue'))(i), label=j)
-plt.title('Logistic Regression (Training set)')
-plt.xlabel('PC1')
-plt.ylabel('PC2')
-plt.legend()
-plt.show()
+# Accuracy Score
+score = accuracy_score(y_test, y_pred)
+print(score)
+
+# Applying K-Fold Cross Validation
+accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=10)
+print(accuracies.mean())
+print(accuracies.std())
+
+
+def logistic_visualization(x, y):
+    """
+    Visualizes the decision boundary for a logistic regression classifier using the global classifier and scaler.
+
+    Parameters:
+        x (ndarray): Feature set (scaled).
+        y (ndarray): Labels.
+    """
+    # Inverse transform the scaled feature set for visualization
+    x_set = sc.inverse_transform(x)
+    y_set = y
+
+    # Create a grid for the decision boundary
+    X1, X2 = np.meshgrid(
+        np.arange(start=x_set[:, 0].min() - 10, stop=x_set[:, 0].max() + 10, step=0.25),
+        np.arange(start=x_set[:, 1].min() - 10000, stop=x_set[:, 1].max() + 10000, step=0.25)
+    )
+
+    # Predict and reshape for contour plotting
+    plt.contourf(
+        X1, X2,
+        classifier.predict(sc.transform(np.array([X1.ravel(), X2.ravel()]).T)).reshape(X1.shape),
+        alpha=0.75, cmap=ListedColormap(('red', 'green'))
+    )
+
+    plt.xlim(X1.min(), X1.max())
+    plt.ylim(X2.min(), X2.max())
+
+    # Scatter plot for actual data points
+    for i, j in enumerate(np.unique(y_set)):
+        plt.scatter(
+            x_set[y_set == j, 0], x_set[y_set == j, 1],
+            c=ListedColormap(('red', 'green'))(i), label=j
+        )
+
+    plt.title('Logistic Regression Decision Boundary')
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.legend()
+    plt.show()
+
+
+# logistic_visualization(x_train, y_train)
