@@ -38,17 +38,5 @@ cm = table(test_set[, 3], y_pred)
 
 # K-Fold Cross Validation
 library(caret)
-folds = createFolds(training_set$Purchased, k = 10)
-cv = lapply(folds, function(x) {
-  training_fold = training_set[-x, ]
-  test_fold = training_set[x, ]
-  classifier = svm(formula = Purchased ~ .,
-                   data = training_fold,
-                   type = 'C-classification',
-                   kernel = 'radial')
-  y_pred = predict(classifier, newdata = test_fold[-3])
-  cm = table(test_fold[, 3], y_pred)
-  accuracy = (cm[1,1] + cm[2,2]) / (cm[1,1] + cm[2,2] + cm[1,2] + cm[2,1])
-  return(accuracy)
-})
-accuracy = mean(as.numeric(cv))
+classifier = train(form=Purchased~., data=training_set, method='svmRadial')
+classifier$Besttune
