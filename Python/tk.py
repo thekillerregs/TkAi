@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import confusion_matrix, accuracy_score
@@ -57,6 +57,23 @@ accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=10)
 print(accuracies.mean())
 print(accuracies.std())
 
+# Applying Grid Search
+parameters = [{'C': [0.25, 0.5, 0.75, 1], 'kernel': ['linear']},
+              {'C': [0.25, 0.5, 0.75, 1], 'kernel': ['rbf'], 'gamma': [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]}]
+
+grid_search = GridSearchCV(estimator=classifier,
+                           param_grid=parameters,
+                           scoring='accuracy',
+                           cv=10,
+                           n_jobs=-1)
+
+grid_search.fit(x_train, y_train)
+best_accuracy = grid_search.best_score_
+best_parameters = grid_search.best_params_
+
+print(best_accuracy)
+print(best_parameters)
+
 
 def logistic_visualization(x, y):
     """
@@ -98,6 +115,5 @@ def logistic_visualization(x, y):
     plt.ylabel('Feature 2')
     plt.legend()
     plt.show()
-
 
 # logistic_visualization(x_train, y_train)
