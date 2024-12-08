@@ -5,6 +5,7 @@ from tensorflow.keras.preprocessing import image
 import tensorflow as tf
 import numpy as np
 
+
 def resource_path(filename: str) -> str:
     """Return the absolute path to a file in the 'resources' folder."""
     base_dir = os.path.dirname(os.path.dirname(__file__))  # Parent directory of the Python folder
@@ -45,3 +46,14 @@ cnn.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 cnn.fit(x=training_set, validation_data=test_set, epochs=25)
 
 # Single prediction
+test_image = image.load_img(resource_path('cnn/single_prediction/cat_or_dog_1.jpg'), target_size=(64, 64))
+test_image = image.img_to_array(test_image)
+test_image = np.expand_dims(test_image, axis=0)
+result = cnn.predict(test_image)
+print(training_set.class_indices)
+if result[0][0] == 1:
+    prediction = 'dog'
+else:
+    prediction = 'cat'
+
+print(prediction)
