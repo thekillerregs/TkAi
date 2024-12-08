@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from matplotlib.colors import ListedColormap
-from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split
@@ -28,10 +28,10 @@ sc = StandardScaler()
 x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
-# Applying PCA
-pca = PCA(n_components=2)
-x_train = pca.fit_transform(x_train)
-x_test = pca.transform(x_test)
+# Applying LDA
+lda = LDA(n_components=2)
+x_train = lda.fit_transform(x_train, y_train)
+x_test = lda.transform(x_test)
 
 # Logistic Regression
 classifier = LogisticRegression(random_state=0)
@@ -41,7 +41,7 @@ classifier.fit(x_train, y_train)
 y_pred = classifier.predict(x_test)
 cm = confusion_matrix(y_test, y_pred)
 print(cm)
-accuracy_score(y_test, y_pred)
+print(accuracy_score(y_test, y_pred))
 
 x_set, y_set = x_train, y_train
 X1, X2 = np.meshgrid(np.arange(start=x_set[:, 0].min() - 1, stop=x_set[:, 0].max() + 1, step=0.01),
