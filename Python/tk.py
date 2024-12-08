@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from matplotlib.colors import ListedColormap
+from sklearn.decomposition import KernelPCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix, accuracy_score
@@ -28,10 +29,10 @@ sc = StandardScaler()
 x_train = sc.fit_transform(x_train)
 x_test = sc.transform(x_test)
 
-# Applying LDA
-lda = LDA(n_components=2)
-x_train = lda.fit_transform(x_train, y_train)
-x_test = lda.transform(x_test)
+# Applying Kernel PCA
+kpca = KernelPCA(n_components=2, kernel='rbf')
+x_train = kpca.fit_transform(x_train)
+x_test = kpca.transform(x_test)
 
 # Logistic Regression
 classifier = LogisticRegression(random_state=0)
